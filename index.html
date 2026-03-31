@@ -54,4 +54,11 @@
     <footer style="padding: 40px; text-align: center; color: #64748b; font-size: 14px;">
         &copy; 2026 SEAS Bootcamp - Built with Cloud Automation
     </footer>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.querySelector('input[type="text"]').value;
+            alert("Congratulations " + name + "! Your registration for SEAS Bootcamp has been received.");
+        });
+    </script>
 </body>
