@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEAS Project Showcase | Skills Presentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -57,7 +58,7 @@
                 <option value="Personnel">Personnel / Organizer</option>
                 <option value="Teacher">Teacher / Evaluator</option>
             </select>
-            <button type="submit">Confirm Participation</button>
+            <button type="submit" id="submitBtn">Confirm Participation</button>
         </form>
     </section>
 
@@ -66,22 +67,43 @@
     </footer>
 
     <script>
+        // 1. Initialize Supabase Connection with your provided keys
+        const supabaseUrl = 'https://euioymukroosxtguynxq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1aW95bXVrcm9vc3h0Z3V5bnhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzQ4NDksImV4cCI6MjA5MTc1MDg0OX0.-6hehGuRTVM8sACuxikzvKtL0s2x-TdCvzkvRDuCSss';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         const form = document.getElementById('registrationForm');
-        form.addEventListener('submit', function(e) {
+        const btn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Visual feedback: Disable button while pushing to Cloud
+            btn.disabled = true;
+            btn.innerText = "Syncing with Cloud...";
+
             const name = form.querySelector('input[name="fullName"]').value.trim();
             const email = form.querySelector('input[name="email"]').value.trim();
             const role = form.querySelector('select[name="userRole"]').value;
 
-            if (name === "" || email === "" || role === "") {
-                alert("Please fill all fields.");
-                return;
-            }
+            // 2. Insert Data into your Supabase 'registrations' table
+            const { data, error } = await _supabase
+                .from('registrations')
+                .insert([
+                    { full_name: name, email: email, role: role }
+                ]);
 
-            // Logic specifically tailored to your definition
-            alert("Hello " + name + "! Your interest as a " + role + " for the SEAS Project Showcase has been successfully recorded. We will contact you at " + email + " with the ceremony schedule.");
-            
-            form.reset(); 
+            if (error) {
+                console.error('Database Error:', error);
+                alert("Cloud Error: Could not save data. Make sure the table 'registrations' exists in Supabase.");
+                btn.disabled = false;
+                btn.innerText = "Confirm Participation";
+            } else {
+                alert("Success! " + name + ", your data is now stored in the SEAS Cloud Database.");
+                form.reset();
+                btn.disabled = false;
+                btn.innerText = "Confirm Participation";
+            }
         });
     </script>
 </body>
