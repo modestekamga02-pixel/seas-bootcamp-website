@@ -1,22 +1,26 @@
-/* General Page Settings */
-body {
-    background-color: #0f172a;
-    color: white;
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+html { scroll-behavior: smooth; }
+body { background-color: #0f172a; color: white; margin: 0; font-family: sans-serif; }
+nav { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 50px; background-color: #1e293b; position: sticky; top: 0; z-index: 1000; 
 }
-
-/* Reusable Card Style */
-.course-card {
-    background-color: #1e293b;
-    padding: 30px;
-    border-radius: 15px;
-    width: 280px;
-    border-bottom: 4px solid #00d2ff;
-    transition: transform 0.3s ease;
-}
-
-.course-card:hover {
-    transform: translateY(-10px);
-    background-color: #334155;
+.logo-text { font-size: 24px; font-weight: bold; color: #00d2ff; }
+.nav-links { display: flex; list-style: none; gap: 25px; }
+.nav-links a { color: white; text-decoration: none; transition: 0.3s; }
+.nav-links a:hover { color: #00d2ff; }
+.hero { display: flex; align-items: center; padding: 80px 50px; gap: 50px; flex-wrap: wrap; }
+.hero-image { border-radius: 20px; width: 100%; max-width: 500px; height: auto; }
+.highlight { color: #00d2ff; }
+.section-title { text-align: center; margin-top: 40px; }
+.courses-container { display: flex; justify-content: center; gap: 30px; padding: 50px; flex-wrap: wrap; }
+.course-card { background-color: #1e293b; padding: 30px; border-radius: 15px; width: 280px; border-bottom: 4px solid #00d2ff; transition: 0.3s; }
+.course-card:hover { transform: translateY(-10px); }
+.registration-section { background-color: #1e293b; padding: 60px 20px; text-align: center; }
+form { max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+input, select, button { padding: 12px; border-radius: 8px; border: none; font-size: 16px; }
+button { background-color: #00d2ff; color: #0f172a; font-weight: bold; cursor: pointer; }
+@media (max-width: 768px) { 
+    nav { flex-direction: column; } 
+    .hero { flex-direction: column; text-align: center; }
+    .course-card { width: 90%; }
 }
