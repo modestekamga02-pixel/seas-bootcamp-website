@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <nav>
         <div class="logo-container">
             <img src="https://cdn-icons-png.flaticon.com/512/4202/4202275.png" alt="SEAS Logo" class="logo">
@@ -22,20 +23,30 @@
     <div class="hero">
         <div class="hero-text">
             <h1>Welcome to <span class="highlight">SEAS Bootcamp</span></h1>
-            <p>Build the future of technology. Master Cloud Computing, DevOps, and Automation.</p>
+            <p>Build the future of technology. Master Cloud Computing, DevOps, and Automation with professional mentors.</p>
         </div>
         <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=500&q=80" alt="Tech Background" class="hero-image">
     </div>
 
     <h2 id="courses" class="section-title">Our Core Training</h2>
     <div class="courses-container">
-        <div class="course-card"><h3>Cloud Computing</h3><p>Learn to deploy and manage applications.</p></div>
-        <div class="course-card"><h3>DevOps & Docker</h3><p>Master containerization and modern infra.</p></div>
-        <div class="course-card"><h3>CI/CD Pipelines</h3><p>Automate your workflow from code to cloud.</p></div>
+        <div class="course-card">
+            <h3>Cloud Computing</h3>
+            <p>Learn to deploy and manage applications on professional cloud platforms.</p>
+        </div>
+        <div class="course-card">
+            <h3>DevOps & Docker</h3>
+            <p>Master containerization and modern infrastructure management.</p>
+        </div>
+        <div class="course-card">
+            <h3>CI/CD Pipelines</h3>
+            <p>Automate your workflow from the first line of code to the final deployment.</p>
+        </div>
     </div>
 
     <section id="contact" class="registration-section">
         <h2 class="section-title">Ready to Join the Bootcamp?</h2>
+        <p>Enter your details below and our team will contact you.</p>
         <form id="registrationForm">
             <input type="text" name="fullName" placeholder="Full Name" required>
             <input type="email" name="email" placeholder="Email Address" required>
@@ -49,15 +60,36 @@
         </form>
     </section>
 
-    <footer>&copy; 2026 SEAS Bootcamp - Built with Cloud Automation</footer>
+    <footer>
+        &copy; 2026 SEAS Bootcamp - Built with Cloud Automation
+    </footer>
 
     <script>
         const form = document.getElementById('registrationForm');
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            const name = form.querySelector('input[name="fullName"]').value;
-            alert("Congratulations " + name + "! Your registration has been received.");
-            form.reset();
+            const name = form.querySelector('input[name="fullName"]').value.trim();
+            const email = form.querySelector('input[name="email"]').value.trim();
+            const course = form.querySelector('select[name="course"]').value;
+
+            if (name === "") {
+                alert("Please enter your full name.");
+                return;
+            }
+            if (email === "") {
+                alert("Please enter your email address.");
+                return;
+            }
+            if (!email.includes("@") || !email.includes(".")) {
+                alert("Please enter a valid email address.");
+                return;
+            }
+            if (course === "") {
+                alert("Please select a course.");
+                return;
+            }
+            alert("Congratulations " + name + "! Your registration for SEAS Bootcamp has been received. We will contact you at " + email + ".");
+            form.reset(); // Reset form after success
         });
     </script>
 </body>

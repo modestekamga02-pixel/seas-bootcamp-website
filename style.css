@@ -1,26 +1,230 @@
-html { scroll-behavior: smooth; }
-body { background-color: #0f172a; color: white; margin: 0; font-family: sans-serif; }
-nav { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 15px 50px; background-color: #1e293b; position: sticky; top: 0; z-index: 1000; 
+/* Global smooth scrolling */
+html {
+    scroll-behavior: smooth;
 }
-.logo-text { font-size: 24px; font-weight: bold; color: #00d2ff; }
-.nav-links { display: flex; list-style: none; gap: 25px; }
-.nav-links a { color: white; text-decoration: none; transition: 0.3s; }
-.nav-links a:hover { color: #00d2ff; }
-.hero { display: flex; align-items: center; padding: 80px 50px; gap: 50px; flex-wrap: wrap; }
-.hero-image { border-radius: 20px; width: 100%; max-width: 500px; height: auto; }
-.highlight { color: #00d2ff; }
-.section-title { text-align: center; margin-top: 40px; }
-.courses-container { display: flex; justify-content: center; gap: 30px; padding: 50px; flex-wrap: wrap; }
-.course-card { background-color: #1e293b; padding: 30px; border-radius: 15px; width: 280px; border-bottom: 4px solid #00d2ff; transition: 0.3s; }
-.course-card:hover { transform: translateY(-10px); }
-.registration-section { background-color: #1e293b; padding: 60px 20px; text-align: center; }
-form { max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-input, select, button { padding: 12px; border-radius: 8px; border: none; font-size: 16px; }
-button { background-color: #00d2ff; color: #0f172a; font-weight: bold; cursor: pointer; }
-@media (max-width: 768px) { 
-    nav { flex-direction: column; } 
-    .hero { flex-direction: column; text-align: center; }
-    .course-card { width: 90%; }
+
+/* Body styles */
+body {
+    background-color: #0f172a;
+    color: white;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navigation bar (sticky) */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: #1e293b;
+    border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-wrap: wrap;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    height: 40px;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00d2ff;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s; /* Added for smoothness */
+}
+
+/* IMPROVEMENT: Visual feedback when hovering over menu items */
+.nav-links a:hover {
+    color: #00d2ff;
+}
+
+/* Hero section */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 50px;
+    gap: 50px;
+    flex-wrap: wrap;
+}
+
+.hero-text {
+    max-width: 500px;
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.highlight {
+    color: #00d2ff;
+}
+
+.hero-text p {
+    font-size: 18px;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.hero-image {
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 210, 255, 0.2);
+    width: 100%;
+    max-width: 500px;
+    height: auto; /* IMPROVEMENT: Prevents image distortion */
+}
+
+/* Section title */
+.section-title {
+    text-align: center;
+    margin-top: 40px;
+}
+
+/* Courses container */
+.courses-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 50px;
+    flex-wrap: wrap;
+}
+
+/* Course card */
+.course-card {
+    background-color: #1e293b;
+    padding: 30px;
+    border-radius: 15px;
+    width: 280px;
+    border-bottom: 4px solid #00d2ff;
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-10px);
+    background-color: #334155;
+}
+
+.course-card h3 {
+    color: #00d2ff;
+    margin-top: 0;
+}
+
+.course-card p {
+    color: #94a3b8;
+}
+
+/* Registration section */
+.registration-section {
+    background-color: #1e293b;
+    padding: 60px 20px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.registration-section h2 {
+    color: #00d2ff;
+    margin-bottom: 10px;
+}
+
+.registration-section p {
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+form {
+    max-width: 400px;
+    width: 90%; /* IMPROVEMENT: Better centering on mobile */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input, select, button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+}
+
+input, select {
+    background-color: white;
+}
+
+button {
+    background-color: #00d2ff;
+    color: #0f172a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #00b8e6;
+    transform: scale(1.02);
+}
+
+/* Footer */
+footer {
+    padding: 40px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    nav {
+        padding: 15px 20px;
+        flex-direction: column;
+    }
+    
+    .nav-links {
+        margin-top: 15px;
+        gap: 20px;
+    }
+    
+    .hero {
+        flex-direction: column;
+        padding: 40px 20px;
+        text-align: center;
+    }
+    
+    .hero-text h1 {
+        font-size: 36px;
+    }
+    
+    .course-card {
+        width: 90%;
+        margin: 0 auto;
+    }
+    
+    .courses-container {
+        padding: 30px 15px;
+    }
 }
