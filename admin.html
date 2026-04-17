@@ -3,36 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | SEAS Showcase</title>
+    <title>Admin Panel | SEAS Registration Management</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .admin-container { padding: 50px; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(255,255,255,0.1); }
-        th, td { padding: 15px; border: 1px solid #444; text-align: left; }
-        th { background: #008080; }
+        .admin-container { padding: 40px; max-width: 1200px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1a252f; color: white; }
+        th, td { padding: 12px; border: 1px solid #34495e; text-align: left; }
+        th { background-color: #00d2ff; color: #000; }
+        tr:nth-child(even) { background-color: #2c3e50; }
+        .stats { margin-bottom: 20px; font-weight: bold; color: #00d2ff; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .badge-student { background: #27ae60; }
+        .badge-personnel { background: #e67e22; }
     </style>
 </head>
 <body>
+
+    <nav>
+        <div class="logo-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202275.png" alt="SEAS Logo" class="logo">
+            <span class="logo-text">Admin Panel</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Back to Site</a></li>
+        </ul>
+    </nav>
+
     <div class="admin-container">
         <h1>Ceremony Registration List</h1>
-        <p>Total Participants recorded in Cloud: <span id="count">0</span></p>
-        
-        <table>
+        <p class="stats" id="countDisplay">Total Participants recorded in Cloud: 0</p>
+
+        <table id="registrationTable">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>Full Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Level</th>
+                    <th>Speciality</th>
+                    <th>Group ID</th>
                 </tr>
             </thead>
-            <tbody id="registrationData">
+            <tbody id="tableBody">
                 </tbody>
         </table>
     </div>
 
     <script>
+        // Use the same keys as index.html
         const supabaseUrl = 'https://euioymukroosxtguynxq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1aW95bXVrcm9vc3h0Z3V5bnhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzQ4NDksImV4cCI6MjA5MTc1MDg0OX0.-6hehGuRTVM8sACuxikzvKtL0s2x-TdCvzkvRDuCSss';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -45,21 +65,33 @@
 
             if (error) {
                 console.error('Error fetching data:', error);
-            } else {
-                const tableBody = document.getElementById('registrationData');
-                document.getElementById('count').innerText = data.length;
-                
-                tableBody.innerHTML = data.map(reg => `
-                    <tr>
-                        <td>${new Date(reg.created_at).toLocaleDateString()}</td>
-                        <td>${reg.full_name}</td>
-                        <td>${reg.email}</td>
-                        <td>${reg.role}</td>
-                    </tr>
-                `).join('');
+                return;
             }
+
+            const tableBody = document.getElementById('tableBody');
+            const countDisplay = document.getElementById('countDisplay');
+            
+            tableBody.innerHTML = '';
+            countDisplay.innerText = `Total Participants recorded in Cloud: ${data.length}`;
+
+            data.forEach(reg => {
+                const row = document.createElement('tr');
+                const date = new Date(reg.created_at).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${reg.full_name}</td>
+                    <td>${reg.email}</td>
+                    <td><span class="badge ${reg.role === 'Student' ? 'badge-student' : 'badge-personnel'}">${reg.role}</span></td>
+                    <td>${reg.academic_level || 'N/A'}</td>
+                    <td>${reg.speciality || 'N/A'}</td>
+                    <td>${reg.group_id || '<em>Unassigned</em>'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
 
+        // Initial fetch
         fetchRegistrations();
     </script>
 </body>
