@@ -43,21 +43,60 @@
             <h3>Skill-Based Solutions</h3>
             <p>Final project presentations highlighting technical mastery and industrial problem-solving.</p>
         </div>
+        <div class="course-card">
+            <h3>Admin & Operations</h3>
+            <p>Technical coordination, logistics management, and backend database oversight for the bootcamp.</p>
+        </div>
     </div>
 
     <section id="register" class="registration-section">
         <h2 class="section-title">Join the Ceremony</h2>
-        <p>Whether you are presenting a project or looking to sponsor talent, register below.</p>
+        <p>Fill in your details. Groups will be mixed with 3-4 members from different specialties.</p>
+        
         <form id="registrationForm">
             <input type="text" name="fullName" placeholder="Full Name" required>
             <input type="email" name="email" placeholder="Email Address" required>
-            <select name="userRole" required>
+            
+            <select name="userRole" id="userRole" required>
                 <option value="">I am a...</option>
                 <option value="Student">Student (Presenter)</option>
                 <option value="Investor">Investor / Sponsor</option>
                 <option value="Personnel">Personnel / Organizer</option>
                 <option value="Teacher">Teacher / Evaluator</option>
             </select>
+
+            <select name="academicLevel" id="academicLevel">
+                <option value="">Select your Level...</option>
+                <option value="Level 2">Level 2 (BTech / BSc)</option>
+                <option value="Level 3">Level 3 (BEng / BHSc)</option>
+            </select>
+
+            <select name="speciality" id="speciality">
+                <option value="">Select Speciality...</option>
+                <optgroup label="BEng 3 (4-Year)">
+                    <option value="BEng-CSE">CSE (Computer)</option>
+                    <option value="BEng-CEE">CEE (Civil)</option>
+                    <option value="BEng-EME">EME (Electromechanical)</option>
+                    <option value="BEng-CHE">CHE (Chemical)</option>
+                </optgroup>
+                <optgroup label="BTech 2 (3-Year)">
+                    <option value="BTech-CSE">CSE (Computer)</option>
+                    <option value="BTech-EEE">EEE (Electrical)</option>
+                    <option value="BTech-MCT">MCT (Mechatronics)</option>
+                    <option value="BTech-MEC">MEC (Mechanical)</option>
+                </optgroup>
+                <optgroup label="BSc 2 (3-Year)">
+                    <option value="BSc-MGT">MGT (Management)</option>
+                    <option value="BSc-MIS">MIS (Info Systems)</option>
+                    <option value="BSc-AF">AF (Accounting & Finance)</option>
+                    <option value="BSc-DMK">DMK (Digital Marketing)</option>
+                </optgroup>
+                <optgroup label="BHSc 3 (Health)">
+                    <option value="BHSc-BMS">BMS (Biomedical)</option>
+                    <option value="BHSc-NUR">NUR (Nursing)</option>
+                </optgroup>
+            </select>
+
             <button type="submit" id="submitBtn">Confirm Participation</button>
         </form>
     </section>
@@ -67,7 +106,7 @@
     </footer>
 
     <script>
-        // 1. Initialize Supabase Connection with your provided keys
+        // Use Netlify Environment Variables for Production
         const supabaseUrl = 'https://euioymukroosxtguynxq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1aW95bXVrcm9vc3h0Z3V5bnhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzQ4NDksImV4cCI6MjA5MTc1MDg0OX0.-6hehGuRTVM8sACuxikzvKtL0s2x-TdCvzkvRDuCSss';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -77,29 +116,35 @@
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Visual feedback: Disable button while pushing to Cloud
             btn.disabled = true;
             btn.innerText = "Syncing with Cloud...";
 
             const name = form.querySelector('input[name="fullName"]').value.trim();
             const email = form.querySelector('input[name="email"]').value.trim();
             const role = form.querySelector('select[name="userRole"]').value;
+            const level = form.querySelector('select[name="academicLevel"]').value;
+            const spec = form.querySelector('select[name="speciality"]').value;
 
-            // 2. Insert Data into your Supabase 'registrations' table
+            // Insert Data: Ensure these columns exist in your Supabase 'registrations' table
             const { data, error } = await _supabase
                 .from('registrations')
                 .insert([
-                    { full_name: name, email: email, role: role }
+                    { 
+                        full_name: name, 
+                        email: email, 
+                        role: role,
+                        academic_level: level, // NEW COLUMN
+                        speciality: spec       // NEW COLUMN
+                    }
                 ]);
 
             if (error) {
                 console.error('Database Error:', error);
-                alert("Cloud Error: Could not save data. Make sure the table 'registrations' exists in Supabase.");
+                alert("Cloud Error: Make sure columns 'academic_level' and 'speciality' exist in Supabase.");
                 btn.disabled = false;
                 btn.innerText = "Confirm Participation";
             } else {
-                alert("Success! " + name + ", your data is now stored in the SEAS Cloud Database.");
+                alert("Success! Data synced to SeaS Cloud.");
                 form.reset();
                 btn.disabled = false;
                 btn.innerText = "Confirm Participation";
