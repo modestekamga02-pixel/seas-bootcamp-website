@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | SEAS Registration Management</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-container { padding: 40px; max-width: 1200px; margin: auto; }
@@ -13,28 +12,34 @@
         th { background-color: #00d2ff; color: #000; }
         tr:nth-child(even) { background-color: #2c3e50; }
         .stats { margin-bottom: 20px; font-weight: bold; color: #00d2ff; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-        .badge-student { background: #27ae60; }
-        .badge-personnel { background: #e67e22; }
+        .btn-export { background: #22c55e; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        
+        /* New Ops Styles */
+        .ops-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .control-card { background: #1a252f; color: white; padding: 20px; border-radius: 6px; border: 1px solid #34495e; }
+        .control-card h3 { color: #00d2ff; margin-top: 0; border-bottom: 1px solid #34495e; padding-bottom: 8px; }
+        .control-card p { font-size: 0.9rem; color: #b4c6d0; }
+        .control-card input, .control-card select { width: 100%; padding: 10px; margin: 8px 0; background: #2c3e50; border: 1px solid #34495e; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; transition: background 0.2s; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="logo-container">
-            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202275.png" alt="SEAS Logo" class="logo">
-            <span class="logo-text">Admin Panel</span>
-        </div>
-        <ul class="nav-links">
-            <li><a href="index.html">Back to Site</a></li>
-        </ul>
+        <span class="logo-text">SEAS Admin Portal</span>
+        <a href="index.html" style="color: white; text-decoration: none;">Back to Home</a>
     </nav>
 
-    <div class="admin-container">
-        <h1>Ceremony Registration List</h1>
-        <p class="stats" id="countDisplay">Total Participants recorded in Cloud: 0</p>
+    <div class="admin-container" id="admin-dashboard-container">
+        <h1>Participant Dashboard</h1>
+        <div id="statusMessage" style="display:none; padding: 10px; margin-bottom: 10px; border-radius: 5px;"></div>
+        
+        <div class="stats">
+            Total Participants recorded in Cloud: <span id="participantCount">0</span>
+            <button class="btn-export" onclick="exportToCSV()" style="margin-left: 20px;">Export to CSV</button>
+        </div>
 
-        <table id="registrationTable">
+        <table>
             <thead>
                 <tr>
                     <th>Date</th>
@@ -42,57 +47,123 @@
                     <th>Email</th>
                     <th>Role</th>
                     <th>Level</th>
-                    <th>Speciality</th>
-                    <th>Group ID</th>
+                    <th>Specialty</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                </tbody>
+            <tbody id="registrationTable">
+            </tbody>
         </table>
+
+        <h2 style="margin-top: 40px; color: white; border-bottom: 2px solid #00d2ff; padding-bottom: 8px;">Bootcamp Content Management</h2>
+        
+        <div class="ops-grid">
+            <div class="control-card" style="border-left: 5px solid #22c55e;">
+                <h3>1. Registration List Publishing</h3>
+                <p>Toggle visibility of verified students and personnel listings on the public home page module.</p>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(true)" style="background: #22c55e;">Publish List</button>
+                    <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(false)" style="background: #ef4444;">Unpublish List</button>
+                </div>
+            </div>
+
+            <div class="control-card" style="border-left: 5px solid #a855f7;">
+                <h3>2. Form & Publish Project Groups</h3>
+                <p>Assemble and display tracking groups. Delineate project members using commas.</p>
+                <input type="text" id="group-name-input" placeholder="e.g., Team Alpha (Cloud Infrastructure)">
+                <input type="text" id="group-members-input" placeholder="e.g., Amadou Bello, Kamga Christian, Lucrèce">
+                <button class="btn-action" id="submit-group-btn" style="background: #a855f7; margin-top: 5px;">Publish Group Set</button>
+            </div>
+
+            <div class="control-card" style="border-left: 5px solid #3b82f6;">
+                <h3>3. Bootcamp Timeline Phase Shift</h3>
+                <p>Advance the current live operational phase tracking indicator across the interface environment.</p>
+                <select id="phase-selector">
+                    <option value="Registration & Ingress Phase">Registration & Ingress Phase</option>
+                    <option value="Active Implementation & Engineering Hackathon">Active Implementation & Engineering Hackathon</option>
+                    <option value="Jury Assessment & Defense Trials">Jury Assessment & Defense Trials</option>
+                    <option value="Conclusion & Graduation Ceremony">Conclusion & Graduation Ceremony</option>
+                </select>
+                <button class="btn-action" id="update-phase-btn" style="background: #3b82f6; margin-top: 5px;">Update Active Phase</button>
+            </div>
+
+            <div class="control-card" style="border-left: 5px solid #eab308;">
+                <h3>4. Broadcast Final Performance Results</h3>
+                <p>Mass-publish verified participant final completion grades and certificates to the homepage dashboards.</p>
+                <button class="btn-action" id="broadcast-results-btn" style="background: #eab308; color: black; margin-top: 15px;">Official Release of Final Grades</button>
+            </div>
+        </div>
     </div>
 
+    <script src="js/script.js"></script>
     <script>
-        // Use the same keys as index.html
-        const supabaseUrl = 'https://euioymukroosxtguynxq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1aW95bXVrcm9vc3h0Z3V5bnhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzQ4NDksImV4cCI6MjA5MTc1MDg0OX0.-6hehGuRTVM8sACuxikzvKtL0s2x-TdCvzkvRDuCSss';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        let allData = [];
 
-        async function fetchRegistrations() {
-            const { data, error } = await _supabase
-                .from('registrations')
-                .select('*')
-                .order('created_at', { ascending: false });
+        async function loadRegistrations() {
+            try {
+                const response = await fetch('/api/registrations');
+                const result   = await response.json();
 
-            if (error) {
-                console.error('Error fetching data:', error);
-                return;
+                if (result.success) {
+                    allData = result.data;
+                    document.getElementById('participantCount').textContent = result.count;
+                    renderTable(result.data);
+                    
+                    // Mirror server registrations down to localStorage fallback for our script engine if needed
+                    localStorage.setItem('bootcamp_registrations', JSON.stringify(result.data.map(r => ({
+                        id: r.id || "0",
+                        name: r.full_name,
+                        type: r.role,
+                        program: r.speciality || "Engineering"
+                    }))));
+                }
+            } catch (err) {
+                console.error('Failed to fetch:', err);
+                // Graceful fallback display using default entries if local development server is disconnected
+                const fallback = JSON.parse(localStorage.getItem('bootcamp_registrations')) || [];
+                document.getElementById('participantCount').textContent = fallback.length;
+                renderTable(fallback.map(f => ({
+                    created_at: new Date(),
+                    full_name: f.name,
+                    email: f.name.toLowerCase().replace(" ", "") + "@seas.edu",
+                    role: f.type,
+                    academic_level: 'L3',
+                    speciality: f.program
+                })));
             }
-
-            const tableBody = document.getElementById('tableBody');
-            const countDisplay = document.getElementById('countDisplay');
-            
-            tableBody.innerHTML = '';
-            countDisplay.innerText = `Total Participants recorded in Cloud: ${data.length}`;
-
-            data.forEach(reg => {
-                const row = document.createElement('tr');
-                const date = new Date(reg.created_at).toLocaleDateString();
-                
-                row.innerHTML = `
-                    <td>${date}</td>
-                    <td>${reg.full_name}</td>
-                    <td>${reg.email}</td>
-                    <td><span class="badge ${reg.role === 'Student' ? 'badge-student' : 'badge-personnel'}">${reg.role}</span></td>
-                    <td>${reg.academic_level || 'N/A'}</td>
-                    <td>${reg.speciality || 'N/A'}</td>
-                    <td>${reg.group_id || '<em>Unassigned</em>'}</td>
-                `;
-                tableBody.appendChild(row);
-            });
         }
 
-        // Initial fetch
-        fetchRegistrations();
+        function renderTable(data) {
+            const tbody = document.getElementById('registrationTable');
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                    <td>${r.full_name}</td>
+                    <td>${r.email}</td>
+                    <td><span style="color: ${r.role === 'Student' ? '#22c55e' : '#f59e0b'}">${r.role}</span></td>
+                    <td>${r.academic_level || 'N/A'}</td>
+                    <td>${r.speciality || 'N/A'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportToCSV() {
+            if (allData.length === 0) return;
+            const headers = ['Date', 'Name', 'Email', 'Role', 'Level', 'Specialty'];
+            const rows = allData.map(r => [
+                new Date(r.created_at).toLocaleDateString(),
+                r.full_name, r.email, r.role, r.academic_level, r.speciality
+            ].join(','));
+            
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "seas_registrations.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        loadRegistrations();
     </script>
 </body>
 </html>
