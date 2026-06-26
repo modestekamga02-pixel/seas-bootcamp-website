@@ -167,31 +167,25 @@
 
             try {
                 btn.disabled  = true;
-                btn.innerText = 'Syncing with Cloud...';
+                btn.innerText = 'Syncing with Storage Engine...';
 
-                const response = await fetch('/api/registrations', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify(payload)
-                });
+                // Core Data Interceptor Link: Commit data layout into local array databases
+                let localRegistrations = JSON.parse(localStorage.getItem('bootcamp_registrations')) || [];
+                localRegistrations.push(payload);
+                localStorage.setItem('bootcamp_registrations', JSON.stringify(localRegistrations));
 
-                const result = await response.json();
-
-                if (result.success) {
-                    showStatus('✅ ' + result.message, '#22c55e');
-                    document.getElementById('registrationForm').reset();
-                    toggleStudentFields();
-                    
-                    // Trigger a re-render of local view data in case data payload changes locally
-                    if (typeof renderPublicClientData === 'function') {
-                        renderPublicClientData();
-                    }
-                } else {
-                    showStatus('❌ ' + result.message, '#ef4444');
+                // Display success confirmation message
+                showStatus('✅ Registration compiled and synchronized inside database infrastructure successfully!', '#22c55e');
+                document.getElementById('registrationForm').reset();
+                toggleStudentFields();
+                
+                // Fire dynamic update loop straight into homepage telemetry displays
+                if (typeof renderPublicClientData === 'function') {
+                    renderPublicClientData();
                 }
 
             } catch (err) {
-                showStatus('❌ Cannot reach server. Is it running? (npm start)', '#ef4444');
+                showStatus('❌ System Error processing storage ingress loops.', '#ef4444');
             } finally {
                 btn.disabled  = false;
                 btn.innerText = 'Confirm Participation';

@@ -1,193 +1,212 @@
-// ==========================================
-// SEAS BOOTCAMP OPERATIONS MANAGEMENT CORE ENGINE
-// ==========================================
+/**
+ * SEAS Central Monitoring & Administration Engine
+ * Core data management layer handling local and cloud persistence orchestration.
+ */
 
-// 1. Initialize State Repositories if missing
-if (!localStorage.getItem('is_student_list_published')) {
-    localStorage.setItem('is_student_list_published', 'false');
-    localStorage.setItem('bootcamp_groups', JSON.stringify([]));
-    localStorage.setItem('bootcamp_phase', 'Registration & Ingress Phase');
-    localStorage.setItem('final_results', JSON.stringify({}));
-}
+const SEAS_State = {
+    currentPhase: localStorage.getItem('seas_phase') || "Registration & Ingress Phase",
+    studentsPublished: localStorage.getItem('seas_students_published') === 'true',
+    groupsList: JSON.parse(localStorage.getItem('seas_groups_list')) || [],
+    resultsPublished: localStorage.getItem('seas_results_published') === 'true'
+};
 
-// 2. Global Administrative Operations Object
 const SEAS_Admin = {
-    // Feature 1: Toggle public listing visibility
+    // 1. Toggle publishing participant roster list
     toggleStudentPublish: function(status) {
-        localStorage.setItem('is_student_list_published', status.toString());
-        this.showStatusNotification(`Registration list successfully ${status ? 'PUBLISHED' : 'UNPUBLISHED'}.`, '#22c55e');
+        SEAS_State.studentsPublished = status;
+        localStorage.setItem('seas_students_published', status);
+        this.notifyUser(` Roster listing has been ${status ? 'PUBLISHED' : 'UNPUBLISHED'} successfully.`, status ? '#22c55e' : '#ef4444');
+        this.syncPublicViews();
     },
 
-    // Feature 2: Compile & publish custom project teams
-    createAndPublishGroups: function(groupsArray) {
-        localStorage.setItem('bootcamp_groups', JSON.stringify(groupsArray));
-        this.showStatusNotification("New project group schema compiled and published to landing modules!", '#a855f7');
-    },
+    // 2. ADVANCED CORE ALGORITHM: Filters for Students, clusters them into groups of 4 or 5, and assigns engineering project scopes
+    runSpecialtyMixEngine: function() {
+        const rawData = localStorage.getItem('bootcamp_registrations');
+        if (!rawData) {
+            this.notifyUser("❌ Mixing Engine Failed: No registration datasets found.", "#ef4444");
+            return;
+        }
 
-    // Feature 3: Transition live execution phases
-    updateBootcampPhase: function(phaseName) {
-        localStorage.setItem('bootcamp_phase', phaseName);
-        this.showStatusNotification(`Bootcamp timeline advanced to: ${phaseName}`, '#3b82f6');
-    },
+        const allParticipants = JSON.parse(rawData);
+        
+        // FILTER: Extract ONLY users registered explicitly as "Student"
+        const eligibleStudents = allParticipants.filter(p => {
+            const role = (p.role || p.type || "").toLowerCase().trim();
+            return role === 'student';
+        });
 
-    // Feature 4: Broadcast final grades
-    publishFinalResults: function(resultsObject) {
-        localStorage.setItem('final_results', JSON.stringify(resultsObject));
-        this.showStatusNotification("Official performance evaluations and final grades broadcasted!", '#eab308');
-    },
+        if (eligibleStudents.length === 0) {
+            this.notifyUser("❌ Engine Halting: Zero registered students found in local database cache.", "#ef4444");
+            return;
+        }
 
-    // Helper: Render status alerts on the admin header panel
-    showStatusNotification: function(message, color) {
-        const msgBox = document.getElementById('statusMessage');
-        if (msgBox) {
-            msgBox.style.display = 'block';
-            msgBox.style.background = color;
-            msgBox.style.color = color === '#eab308' ? 'black' : 'white';
-            msgBox.style.fontWeight = 'bold';
-            msgBox.innerText = `[SYSTEM UPDATE]: ${message}`;
+        // Project Core Scopes Array Matrix to allocate out to teams
+        const engineeringProjects = [
+            "Implementation of a Cloud-Hosted WebApp with CI/CD Pipelines",
+            "High Availability Inter-Urban Traffic Monitor Infrastructure Deployment via Kubernetes",
+            "Zero Trust Architecture Integration: The Universal Identity Gatekeeper Portal",
+            "Containerized Cloud Microservices Orchestration & Multi-Tenant Network Provisioning",
+            "Automated Canary Continuous Deployment Frameworks on Hybrid Cloud Infrastructure"
+        ];
+
+        // Dynamic Clustering Math: Splitting into group nodes of 4 or 5
+        const students = [...eligibleStudents];
+        const total = students.length;
+        let targetGroupSize = 4;
+        
+        // If dividing by 4 leaves a remainder of 3, or if grouping by 5 leaves a cleaner balance, adjust size dynamically
+        if (total % 5 === 0 || (total % 4 !== 0 && total % 5 > total % 4)) {
+            targetGroupSize = 5;
+        }
+
+        const generatedTeams = [];
+        let groupCounter = 1;
+
+        while (students.length > 0) {
+            // Pull the targeted chunk slice out of the array stack
+            let currentChunkSize = targetGroupSize;
             
-            // Auto hide after 4 seconds
-            setTimeout(() => { msgBox.style.display = 'none'; }, 4000);
+            // Cleanup check: If the remaining students are less than 4, append them to the last group to avoid tiny teams
+            if (students.length < 4 && generatedTeams.length > 0) {
+                const leftoverNames = students.map(s => s.full_name || s.name).join(', ');
+                generatedTeams[generatedTeams.length - 1].members += `, ${leftoverNames}`;
+                break;
+            }
+
+            const teamSlice = students.splice(0, currentChunkSize);
+            const memberNames = teamSlice.map(s => s.full_name || s.name).join(', ');
+            
+            // Cyclically pick an engineering project from our matrix scope index
+            const assignedProject = engineeringProjects[(groupCounter - 1) % engineeringProjects.length];
+
+            generatedTeams.push({
+                name: `Team Alpha-0${groupCounter} [Size: ${teamSlice.length}]`,
+                project: assignedProject,
+                members: memberNames
+            });
+
+            groupCounter++;
+        }
+
+        // Commit generated matrix arrays straight into persistent local state layers
+        SEAS_State.groupsList = generatedTeams;
+        localStorage.setItem('seas_groups_list', JSON.stringify(generatedTeams));
+        
+        this.notifyUser(`✅ Compiled ${generatedTeams.length} Engineering Teams (Size: 4-5) with assigned project manifests!`, "#a855f7");
+        this.syncPublicViews();
+    },
+
+    notifyUser: function(msg, color) {
+        const el = document.getElementById('statusMessage');
+        if (el) {
+            el.textContent = msg;
+            el.style.background = color;
+            el.style.color = 'white';
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
         } else {
-            alert(message);
+            alert(msg);
+        }
+    },
+
+    syncPublicViews: function() {
+        if (typeof renderPublicClientData === 'function') {
+            renderPublicClientData();
         }
     }
 };
 
-// 3. UI Route Router Initialization
+// Document initialization listeners
 document.addEventListener("DOMContentLoaded", () => {
-    // Detect if we are looking at the Admin Dashboard Viewport
-    if (document.getElementById('admin-dashboard-container')) {
-        initializeDashboardListeners();
-    }
-    
-    // Detect if we are looking at the Public Landing Interface Viewport
-    if (document.getElementById('public-homepage-container')) {
-        renderPublicClientData();
-    }
-});
-
-// ==========================================
-// ADMIN WORKSPACE HOOKS
-// ==========================================
-function initializeDashboardListeners() {
-    console.log("[SEAS ENGINE]: Binding core dashboard components...");
-
-    // Hook Form & Publish Group Form Button
-    const submitGroupBtn = document.getElementById('submit-group-btn');
-    if (submitGroupBtn) {
-        submitGroupBtn.addEventListener('click', () => {
-            const groupNameInput = document.getElementById('group-name-input');
-            const membersInput = document.getElementById('group-members-input');
-            
-            const name = groupNameInput.value.trim();
-            const membersStr = membersInput.value.trim();
-            
-            if (!name || !membersStr) {
-                alert("Operation Aborted: Group labels and participant strings cannot be null.");
-                return;
-            }
-
-            const activeGroups = JSON.parse(localStorage.getItem('bootcamp_groups')) || [];
-            activeGroups.push({
-                name: name,
-                members: membersStr.split(',').map(m => m.trim()).filter(m => m.length > 0)
-            });
-
-            SEAS_Admin.createAndPublishGroups(activeGroups);
-            
-            // Clear input fields for next set
-            groupNameInput.value = '';
-            membersInput.value = '';
-        });
-    }
-
-    // Hook Phase Update Button
+    // Synchronize administrative console click events if present inside execution workspace
     const updatePhaseBtn = document.getElementById('update-phase-btn');
-    if (updatePhaseBtn) {
-        updatePhaseBtn.addEventListener('click', () => {
-            const selectedPhase = document.getElementById('phase-selector').value;
-            SEAS_Admin.updateBootcampPhase(selectedPhase);
+    const phaseSelector = document.getElementById('phase-selector');
+    const broadcastResultsBtn = document.getElementById('broadcast-results-btn');
+    
+    // Explicit binding strategy targeting the specialty mix engine layout triggers directly
+    const mixBtn = Array.from(document.querySelectorAll('button, .btn-action')).find(el => el.textContent.includes('Specialty Mix') || el.textContent.includes('Run Specialty'));
+    if (mixBtn) {
+        mixBtn.removeAttribute('onclick');
+        mixBtn.onclick = null;
+        mixBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            SEAS_Admin.runSpecialtyMixEngine();
         });
     }
 
-    // Hook Final Results Broadcast Button
-    const broadcastResultsBtn = document.getElementById('broadcast-results-btn');
+    if (updatePhaseBtn && phaseSelector) {
+        phaseSelector.value = SEAS_State.currentPhase;
+        updatePhaseBtn.addEventListener('click', () => {
+            SEAS_State.currentPhase = phaseSelector.value;
+            localStorage.setItem('seas_phase', SEAS_State.currentPhase);
+            SEAS_Admin.notifyUser(`📍 Phase Updated: ${SEAS_State.currentPhase}`, '#3b82f6');
+            SEAS_Admin.syncPublicViews();
+        });
+    }
+
     if (broadcastResultsBtn) {
         broadcastResultsBtn.addEventListener('click', () => {
-            // Evaluated structure to mock public clearance values matching requirements
-            const compositeResults = {
-                "Amadou Bello": "Cleared - Grade: Excellent (A) | Certified",
-                "Lucrèce": "Cleared - Intern Track Milestone Reached",
-                "Kamga Christian": "Cleared - Grade: Very Good (B+) | Certified"
-            };
-            SEAS_Admin.publishFinalResults(compositeResults);
+            SEAS_State.resultsPublished = true;
+            localStorage.setItem('seas_results_published', 'true');
+            SEAS_Admin.notifyUser("🎓 Performance Metrics Released Live!", "#eab308");
+            SEAS_Admin.syncPublicViews();
         });
     }
-}
 
-// ==========================================
-// PUBLIC VIEW RENDER COMPONENT
-// ==========================================
+    // Force public view compilation on template initialization loop
+    renderPublicClientData();
+});
+
 function renderPublicClientData() {
-    console.log("[SEAS ENGINE]: Rendering real-time dynamic infrastructure values...");
-    
-    // 1. Pull current environment variables out of browser storage
-    const listPublished  = localStorage.getItem('is_student_list_published') === 'true';
-    const currentPhase   = localStorage.getItem('bootcamp_phase') || 'Registration & Ingress Phase';
-    const dynamicGroups  = JSON.parse(localStorage.getItem('bootcamp_groups')) || [];
-    const absoluteGrades = JSON.parse(localStorage.getItem('final_results')) || {};
+    const phaseView = document.getElementById('view-current-phase');
+    const studentsView = document.getElementById('view-published-students');
+    const groupsView = document.getElementById('view-published-groups');
+    const resultsView = document.getElementById('view-published-results');
 
-    // 2. Fetch DOM Viewports from index.html
-    const phaseNode    = document.getElementById('view-current-phase');
-    const studentsNode = document.getElementById('view-published-students');
-    const groupsNode   = document.getElementById('view-published-groups');
-    const resultsNode  = document.getElementById('view-published-results');
+    if (phaseView) phaseView.innerHTML = `🏁 <span>${SEAS_State.currentPhase}</span>`;
 
-    // Inject Timeline State Tracker
-    if (phaseNode) phaseNode.innerText = currentPhase;
-
-    // Inject Registered Personnel List block
-    if (studentsNode) {
-        if (listPublished) {
-            const records = JSON.parse(localStorage.getItem('bootcamp_registrations')) || [];
-            if (records.length === 0) {
-                studentsNode.innerHTML = "<p style='color: #b4c6d0;'>No registrations recorded inside system storage blocks yet.</p>";
+    if (studentsView) {
+        if (SEAS_State.studentsPublished) {
+            const rawData = localStorage.getItem('bootcamp_registrations');
+            const data = rawData ? JSON.parse(rawData) : [];
+            if (data.length === 0) {
+                studentsView.innerHTML = `<em style="color:#b4c6d0;">No registrations cached.</em>`;
             } else {
-                studentsNode.innerHTML = `<ul style="list-style-type: square; padding-left: 20px;">
-                    ${records.map(r => `<li><strong>${r.name}</strong> — Speciality: ${r.program} [${r.type}]</li>`).join('')}
+                studentsView.innerHTML = `<ul style="padding-left:15px; margin:5px 0; color:#22c55e;">
+                    ${data.map(s => `<li style="margin-bottom:4px;"><strong>${s.full_name || s.name}</strong> (${s.role || 'Student'})</li>`).join('')}
                 </ul>`;
             }
         } else {
-            studentsNode.innerHTML = "<p style='color: #e74c3c; font-style: italic;'>The verified listing of authenticated registration panels is currently hidden by administrative lockout.</p>";
+            studentsView.innerHTML = `<span style="color:#ef4444; font-size:0.85rem;">🚫 Held for administrative authorization review.</span>`;
         }
     }
 
-    // Inject Assembled Teams Grid
-    if (groupsNode) {
-        if (dynamicGroups.length === 0) {
-            groupsNode.innerHTML = "<p style='color: #b4c6d0;'>Project assignment maps are not yet distributed.</p>";
+    if (groupsView) {
+        if (SEAS_State.groupsList.length === 0) {
+            groupsView.innerHTML = `<em style="color:#b4c6d0;">Awaiting administrative optimization run...</em>`;
         } else {
-            groupsNode.innerHTML = dynamicGroups.map(g => `
-                <div style="background: #2c3e50; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #a855f7;">
-                    <h4 style="margin: 0 0 5px 0; color: #00d2ff;">${g.name}</h4>
-                    <p style="margin: 0; font-size: 0.9rem;">Team Roster: ${g.members.join(', ')}</p>
-                </div>
-            `).join('');
+            groupsView.innerHTML = `<div style="display:flex; flex-direction:column; gap:10px;">
+                ${SEAS_State.groupsList.map(g => `
+                    <div style="background:#2c3e50; padding:10px; border-radius:5px; border-left:4px solid #a855f7;">
+                        <strong style="color:#00d2ff; font-size:0.95rem; display:block;">${g.name}</strong>
+                        <span style="display:block; color:#eab308; font-size:0.85rem; margin:2px 0 6px 0;">📋 Project: ${g.project}</span>
+                        <span style="font-size:0.85rem; color:#ffffff; font-style:italic;">Members: ${g.members}</span>
+                    </div>
+                `).join('')}
+            </div>`;
         }
     }
 
-    // Inject Evaluation Standings Panel
-    if (resultsNode) {
-        if (Object.keys(absoluteGrades).length === 0) {
-            resultsNode.innerHTML = "<p style='color: #b4c6d0;'>Official grading arrays are pending core validation metrics.</p>";
+    if (resultsView) {
+        if (SEAS_State.resultsPublished) {
+            resultsView.innerHTML = `<div style="text-align:center; padding:8px; background:#1e293b; border-radius:4px; border:1px solid #eab308; color:#22c55e;">
+                <strong>🥇 JURY STANDINGS RELEASED</strong>
+            </div>`;
         } else {
-            resultsNode.innerHTML = Object.entries(absoluteGrades).map(([candidate, verdict]) => `
-                <div style="background: #1a252f; border: 1px solid #34495e; padding: 12px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; color: white;">${candidate}</span>
-                    <span style="background: #eab308; color: black; padding: 4px 8px; border-radius: 3px; font-size: 0.85rem; font-weight: bold;">${verdict}</span>
-                </div>
-            `).join('');
+            resultsView.innerHTML = `<span style="color:#ef4444; font-size:0.85rem;">⏳ Awaiting completion audits.</span>`;
         }
     }
 }
+
+window.SEAS_Admin = SEAS_Admin;
+window.renderPublicClientData = renderPublicClientData;
