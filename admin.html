@@ -21,84 +21,162 @@
         .control-card p { font-size: 0.9rem; color: #b4c6d0; }
         .control-card input, .control-card select { width: 100%; padding: 10px; margin: 8px 0; background: #2c3e50; border: 1px solid #34495e; color: white; border-radius: 4px; box-sizing: border-box; }
         .btn-action { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; transition: background 0.2s; }
+
+        /* AUTHENTICATION GATEWAY STYLES */
+        #auth-gate-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111827; display: flex; justify-content: center; align-items: center;
+            z-index: 99999; transition: opacity 0.3s ease;
+        }
+        .auth-card {
+            background: #1a252f; border: 2px solid #34495e; border-radius: 8px;
+            padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .auth-card h2 { color: #00d2ff; margin-bottom: 10px; font-size: 1.5rem; }
+        .auth-card p { color: #b4c6d0; font-size: 0.9rem; margin-bottom: 20px; }
+        .auth-input {
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px;
+            border: 1px solid #34495e; background: #2c3e50; color: white; font-size: 1.1rem; text-align: center; box-sizing: border-box;
+        }
+        .auth-btn {
+            width: 100%; padding: 12px; background: #00d2ff; color: #111827;
+            font-weight: bold; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: background 0.2s;
+        }
+        .auth-btn:hover { background: #00b4dc; }
+        #auth-error-msg { color: #ef4444; font-weight: bold; margin-top: 10px; font-size: 0.85rem; display: none; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <span class="logo-text">SEAS Admin Portal</span>
-        <a href="index.html" style="color: white; text-decoration: none;">Back to Home</a>
-    </nav>
-
-    <div class="admin-container" id="admin-dashboard-container">
-        <h1>Participant Dashboard</h1>
-        <div id="statusMessage" style="display:none; padding: 10px; margin-bottom: 10px; border-radius: 5px;"></div>
-        
-        <div class="stats">
-            Total Participants recorded in Cloud: <span id="participantCount">0</span>
-            <button class="btn-export" onclick="exportToCSV()" style="margin-left: 20px;">Export to CSV</button>
+    <div id="auth-gate-overlay">
+        <div class="auth-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202275.png" alt="Lock Logo" style="width: 60px; margin-bottom: 15px;">
+            <h2>SEAS Access Control</h2>
+            <p>Please provide the administrative clearance security passkey to manage deployment gateways.</p>
+            <input type="password" id="adminPasskeyField" class="auth-input" placeholder="••••••••" onkeypress="handleAuthKeyPress(event)">
+            <button class="auth-btn" onclick="validateAdminIdentity()">Authenticate System</button>
+            <p id="auth-error-msg">❌ Access Denied: Invalid Administrative Credentials.</p>
+            <div style="margin-top: 15px;"><a href="index.html" style="color: #b4c6d0; text-decoration: none; font-size: 0.8rem;">&larr; Return to Showcase Home</a></div>
         </div>
+    </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Level</th>
-                    <th>Specialty</th>
-                </tr>
-            </thead>
-            <tbody id="registrationTable">
-            </tbody>
-        </table>
+    <div id="dashboard-wrapper" style="display: none;">
+        <nav>
+            <span class="logo-text">SEAS Admin Portal</span>
+            <button onclick="terminateAdminSession()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Logout</button>
+        </nav>
 
-        <h2 style="margin-top: 40px; color: white; border-bottom: 2px solid #00d2ff; padding-bottom: 8px;">Bootcamp Content Management</h2>
-        
-        <div class="ops-grid">
-            <div class="control-card" style="border-left: 5px solid #22c55e;">
-                <h3>1. Registration List Publishing</h3>
-                <p>Toggle visibility of verified students and personnel listings on the public home page module.</p>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(true)" style="background: #22c55e;">Publish List</button>
-                    <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(false)" style="background: #ef4444;">Unpublish List</button>
+        <div class="admin-container" id="admin-dashboard-container">
+            <h1>Participant Dashboard</h1>
+            <div id="statusMessage" style="display:none; padding: 10px; margin-bottom: 10px; border-radius: 5px;"></div>
+            
+            <div class="stats">
+                Total Participants recorded in Cloud: <span id="participantCount">0</span>
+                <button class="btn-export" onclick="exportToCSV()" style="margin-left: 20px;">Export to CSV</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Level</th>
+                        <th>Specialty</th>
+                    </tr>
+                </thead>
+                <tbody id="registrationTable">
+                </tbody>
+            </table>
+
+            <h2 style="margin-top: 40px; color: white; border-bottom: 2px solid #00d2ff; padding-bottom: 8px;">Bootcamp Content Management</h2>
+            
+            <div class="ops-grid">
+                <div class="control-card" style="border-left: 5px solid #22c55e;">
+                    <h3>1. Registration List Publishing</h3>
+                    <p>Toggle visibility of verified students and personnel listings on the public home page module.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(true)" style="background: #22c55e;">Publish List</button>
+                        <button class="btn-action" onclick="SEAS_Admin.toggleStudentPublish(false)" style="background: #ef4444;">Unpublish List</button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="control-card" style="border-left: 5px solid #a855f7;">
-                <h3>2. Form & Publish Project Groups</h3>
-                <p>Assemble and display tracking groups. Delineate project members using commas.</p>
-                <input type="text" id="group-name-input" placeholder="e.g., Team Alpha (Cloud Infrastructure)">
-                <input type="text" id="group-members-input" placeholder="e.g., Amadou Bello, Kamga Christian, Lucrèce">
-                <button class="btn-action" id="submit-group-btn" style="background: #a855f7; margin-top: 5px;">Publish Group Set</button>
-            </div>
+                <div class="control-card" style="border-left: 5px solid #a855f7;">
+                    <h3>2. Form & Publish Project Groups</h3>
+                    <p>Assemble and display tracking groups. Delineate project members using commas.</p>
+                    <input type="text" id="group-name-input" placeholder="e.g., Team Alpha (Cloud Infrastructure)">
+                    <input type="text" id="group-members-input" placeholder="e.g., Amadou Bello, Kamga Christian, Lucrèce">
+                    <button class="btn-action" id="submit-group-btn" style="background: #a855f7; margin-top: 5px;">Publish Group Set</button>
+                </div>
 
-            <div class="control-card" style="border-left: 5px solid #3b82f6;">
-                <h3>3. Bootcamp Timeline Phase Shift</h3>
-                <p>Advance the current live operational phase tracking indicator across the interface environment.</p>
-                <select id="phase-selector">
-                    <option value="Registration & Ingress Phase">Registration & Ingress Phase</option>
-                    <option value="Active Implementation & Engineering Hackathon">Active Implementation & Engineering Hackathon</option>
-                    <option value="Jury Assessment & Defense Trials">Jury Assessment & Defense Trials</option>
-                    <option value="Conclusion & Graduation Ceremony">Conclusion & Graduation Ceremony</option>
-                </select>
-                <button class="btn-action" id="update-phase-btn" style="background: #3b82f6; margin-top: 5px;">Update Active Phase</button>
-            </div>
+                <div class="control-card" style="border-left: 5px solid #3b82f6;">
+                    <h3>3. Bootcamp Timeline Phase Shift</h3>
+                    <p>Advance the current live operational phase tracking indicator across the interface environment.</p>
+                    <select id="phase-selector">
+                        <option value="Registration & Ingress Phase">Registration & Ingress Phase</option>
+                        <option value="Active Implementation & Engineering Hackathon">Active Implementation & Engineering Hackathon</option>
+                        <option value="Jury Assessment & Defense Trials">Jury Assessment & Defense Trials</option>
+                        <option value="Conclusion & Graduation Ceremony">Conclusion & Graduation Ceremony</option>
+                    </select>
+                    <button class="btn-action" id="update-phase-btn" style="background: #3b82f6; margin-top: 5px;">Update Active Phase</button>
+                </div>
 
-            <div class="control-card" style="border-left: 5px solid #eab308;">
-                <h3>4. Broadcast Final Performance Results</h3>
-                <p>Mass-publish verified participant final completion grades and certificates to the homepage dashboards.</p>
-                <button class="btn-action" id="broadcast-results-btn" style="background: #eab308; color: black; margin-top: 15px;">Official Release of Final Grades</button>
+                <div class="control-card" style="border-left: 5px solid #eab308;">
+                    <h3>4. Broadcast Final Performance Results</h3>
+                    <p>Mass-publish verified participant final completion grades and certificates to the homepage dashboards.</p>
+                    <button class="btn-action" id="broadcast-results-btn" style="background: #eab308; color: black; margin-top: 15px;">Official Release of Final Grades</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="js/script.js"></script>
     <script>
-        let allData = [];
+        // SECURITY ALGORITHM GATEWAY LOGIC
+        function verifySessionState() {
+            if (sessionStorage.getItem('seas_authenticated') === 'true') {
+                document.getElementById('auth-gate-overlay').style.display = 'none';
+                document.getElementById('dashboard-wrapper').style.display = 'block';
+                loadRegistrations();
+            }
+        }
 
+        function validateAdminIdentity() {
+            const passkeyInput = document.getElementById('adminPasskeyField').value;
+            const errMsg = document.getElementById('auth-error-msg');
+            
+            // Explicit passkey condition verification matching requirement
+            if (passkeyInput === 'admin123') {
+                sessionStorage.setItem('seas_authenticated', 'true');
+                errMsg.style.display = 'none';
+                document.getElementById('auth-gate-overlay').style.display = 'none';
+                document.getElementById('dashboard-wrapper').style.display = 'block';
+                loadRegistrations();
+            } else {
+                errMsg.style.display = 'block';
+                document.getElementById('adminPasskeyField').value = '';
+                document.getElementById('adminPasskeyField').focus();
+            }
+        }
+
+        function handleAuthKeyPress(event) {
+            if (event.key === 'Enter') {
+                validateAdminIdentity();
+            }
+        }
+
+        function terminateAdminSession() {
+            sessionStorage.removeItem('seas_authenticated');
+            window.location.href = 'index.html';
+        }
+
+        // Run verification instantly on load execution
+        verifySessionState();
+
+        let allData = [];
         async function loadRegistrations() {
+            if (sessionStorage.getItem('seas_authenticated') !== 'true') return;
             try {
                 const response = await fetch('/api/registrations');
                 const result   = await response.json();
@@ -108,7 +186,6 @@
                     document.getElementById('participantCount').textContent = result.count;
                     renderTable(result.data);
                     
-                    // Mirror server registrations down to localStorage fallback for our script engine if needed
                     localStorage.setItem('bootcamp_registrations', JSON.stringify(result.data.map(r => ({
                         id: r.id || "0",
                         name: r.full_name,
@@ -118,7 +195,6 @@
                 }
             } catch (err) {
                 console.error('Failed to fetch:', err);
-                // Graceful fallback display using default entries if local development server is disconnected
                 const fallback = JSON.parse(localStorage.getItem('bootcamp_registrations')) || [];
                 document.getElementById('participantCount').textContent = fallback.length;
                 renderTable(fallback.map(f => ({
@@ -134,6 +210,7 @@
 
         function renderTable(data) {
             const tbody = document.getElementById('registrationTable');
+            if(!tbody) return;
             tbody.innerHTML = data.map(r => `
                 <tr>
                     <td>${new Date(r.created_at).toLocaleDateString()}</td>
@@ -162,8 +239,6 @@
             document.body.appendChild(link);
             link.click();
         }
-
-        loadRegistrations();
     </script>
 </body>
 </html>
